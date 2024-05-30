@@ -1,31 +1,32 @@
 package com.hampus.authenticate_and_authorize.controller;
 
+import com.hampus.authenticate_and_authorize.AuthFiles.QRCode;
 import com.hampus.authenticate_and_authorize.models.MyUser;
+import com.hampus.authenticate_and_authorize.repo.IUserRepository;
 import jakarta.validation.Valid;
+import org.jboss.aerogear.security.otp.api.Base32;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.util.HtmlUtils;
 
 @Controller
 public class MyController
 {
     private PasswordEncoder passwordEncoder;
-    private InMemoryUserDetailsManager userDetailsManager;
+    private IUserRepository repository;
+    private QRCode qrCode;
 
     @Autowired
-    public MyController(PasswordEncoder passwordEncoder, InMemoryUserDetailsManager manager){
+    public MyController(PasswordEncoder passwordEncoder, IUserRepository repository, QRCode qrCode){
         this.passwordEncoder = passwordEncoder;
-        this.userDetailsManager = manager;
+        this.repository = repository;
+        this.qrCode = qrCode;
     }
 
     @GetMapping("/register")
@@ -35,24 +36,20 @@ public class MyController
     }
 
     @PostMapping("/register")
-    public String postRegister(@Valid @ModelAttribute("user") MyUser user, RedirectAttributes redirectAttributes, BindingResult bindingResult){
-        System.out.println("inside?");
+    public String postRegister(@Valid @ModelAttribute("user") MyUser user, BindingResult bindingResult, Model model){
         if (bindingResult.hasErrors()) {
-            System.out.println("inside binding result error");
+            System.out.println("Found errors!");
             return "Register";
         }else{
-            System.out.println("inside else sats");
-            UserDetails newUser = User
-                    .builder()
-                    .password(HtmlUtils.htmlEscape(passwordEncoder.encode(user.getPassword())))
-                    .username(HtmlUtils.htmlEscape(user.getUsername()))
-                    .roles("USER")
-                    .build();
-            userDetailsManager.createUser(newUser);
-            redirectAttributes.addFlashAttribute("user", user);
-            return "redirect:/user/home";
+            user.setSecret(Base32.random())
+                .setRole("USER")
+                .setPassword(HtmlUtils.htmlEscape(passwordEncoder.encode(user.getPassword())))
+                .setUsername(HtmlUtils.htmlEscape(user.getUsername()));
+            repository.save(user);
+            model.addAttribute("qrcode", qrCode.dataUrl(user));
+            System.out.println("new user ez win");
+            return "QRCode";
         }
-
     }
 
     @GetMapping("/home")
@@ -71,5 +68,12 @@ public class MyController
     {
         model.addAttribute("user", user);
         return "UserPage";
+    }
+
+    @GetMapping("/login")
+    public String loginPage(Model model)
+    {
+        model.addAttribute("user", new MyUser());
+        return "Login";
     }
 }

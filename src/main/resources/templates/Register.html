@@ -11,15 +11,15 @@
         <label for="username" >Enter username</label>
         <input type="text" id="username" th:field="*{username}" >
         <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}">username error</span>
-
-        <label for="password">Enter password</label>
-        <input type="password" id="password" th:field="*{password}">
-        <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}">password error</span>
-
+        <br>
         <label for="email">Enter email</label>
         <input type="email" id="email" th:field="*{email}">
         <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}">email Error</span>
-
+        <br>
+        <label for="password">Enter password</label>
+        <input type="password" id="password" th:field="*{password}">
+        <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}">password error</span>
+        <br>
         <button type="submit">Submit</button>
     </form>
 </div>
