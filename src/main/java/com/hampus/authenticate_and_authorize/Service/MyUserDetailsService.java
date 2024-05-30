@@ -2,7 +2,6 @@ package com.hampus.authenticate_and_authorize.Service;
 
 import com.hampus.authenticate_and_authorize.models.MyUser;
 import com.hampus.authenticate_and_authorize.repo.IUserRepository;
-import org.springframework.security.config.core.GrantedAuthorityDefaults;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -29,7 +28,7 @@ public class MyUserDetailsService implements UserDetailsService
     {
         MyUser user = repository.findByEmail(username);
         if(user == null){
-            throw new UsernameNotFoundException("No user found with username: " + username);
+            throw new UsernameNotFoundException("No user found with email: " + username);
         }
         Collection<? extends GrantedAuthority> authorities = getAuthorities(user.getRole());
 
@@ -39,5 +38,4 @@ public class MyUserDetailsService implements UserDetailsService
     private Collection<? extends GrantedAuthority> getAuthorities(String role) {
         return Collections.singletonList(new SimpleGrantedAuthority(role));
     }
-
 }

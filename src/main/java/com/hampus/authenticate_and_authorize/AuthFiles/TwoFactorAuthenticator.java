@@ -44,5 +44,4 @@ public class TwoFactorAuthenticator extends DaoAuthenticationProvider
     //denna token-class är den vi returnerar i authenticate-metoden som vi just implementerat
         return authentication.equals(UsernamePasswordAuthenticationToken.class);
     }
-
 }
